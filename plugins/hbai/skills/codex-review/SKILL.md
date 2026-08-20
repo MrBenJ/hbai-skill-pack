@@ -62,8 +62,8 @@ One Codex invocation, from the repository root, passing the prompt on stdin
 few minutes — use a generous timeout (up to 10 minutes).
 
 ```bash
-REVIEW_OUT="$(mktemp -t codex-review)"
-REVIEW_ERR="$(mktemp -t codex-review-stderr)"
+REVIEW_OUT="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
+REVIEW_ERR="$(mktemp "${TMPDIR:-/tmp}/codex-review-stderr.XXXXXX")"
 
 codex exec --sandbox read-only -o "$REVIEW_OUT" - <<'EOF' > /dev/null 2>"$REVIEW_ERR"
 You are performing a one-shot code review. Review target: <TARGET>.
