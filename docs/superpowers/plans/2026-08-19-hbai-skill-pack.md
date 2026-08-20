@@ -2,18 +2,18 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship the public `MrBenJ/claude-code-skill-pack` repo: a plugin-marketplace repo containing the `hbai` plugin with four Claude Code skills (codex-review, codex-review-loop, context-hygiene, smart-compact), a two-skill Codex-side mirror pack (claude-review, claude-review-loop), and a teaching README.
+**Goal:** Ship the public `MrBenJ/hbai-skill-pack` repo: a plugin-marketplace repo containing the `hbai` plugin with four Claude Code skills (codex-review, codex-review-loop, context-hygiene, smart-compact), a two-skill Codex-side mirror pack (claude-review, claude-review-loop), and a teaching README.
 
 **Architecture:** One repo = one marketplace + one plugin (`plugins/hbai/`) + a Codex-side mirror (`codex/skills/`). Two skill chains: an atomic Codex reviewer composed by a fix loop, and a context-health detector that triggers a compactor — plus the review chain mirrored with roles swapped (Codex drives, Claude reviews). Skills locate bundled scripts via the `${CLAUDE_SKILL_DIR}` substitution variable so both install paths (plugin, manual copy) work.
 
 **Tech Stack:** Claude Code skills (Markdown + YAML frontmatter), Python 3 stdlib scripts, OpenAI Codex CLI (`codex exec --sandbox read-only`), git + gh.
 
-**Spec:** `docs/superpowers/specs/2026-08-19-claude-code-skill-pack-design.md`
+**Spec:** `docs/superpowers/specs/2026-08-19-hbai-skill-pack-design.md`
 
 ## Global Constraints
 
-- Repo root: `/Users/bjunya/code/hbai/opensource/claude-code-skill-pack` (git already initialized on `main`; parent dirs are NOT git repos — never run git above the repo root).
-- Plugin name is exactly `hbai`; marketplace name is exactly `claude-code-skill-pack`.
+- Repo root: `/Users/bjunya/code/hbai/opensource/hbai-skill-pack` (git already initialized on `main`; parent dirs are NOT git repos — never run git above the repo root).
+- Plugin name is exactly `hbai`; marketplace name is exactly `hbai-skill-pack`.
 - MIT license, copyright holder "Ben Junya".
 - Verdict contract, exact strings: `VERDICT: NO BLOCKING ISSUES` and `VERDICT: BLOCKING ISSUES FOUND`. Blocking = any `[BLOCKER]` or `[MAJOR]` finding.
 - Severity labels, exact: `[BLOCKER]`, `[MAJOR]`, `[MINOR]`, `[NIT]`.
@@ -50,7 +50,7 @@ __pycache__/
 
 ```json
 {
-  "name": "claude-code-skill-pack",
+  "name": "hbai-skill-pack",
   "owner": {
     "name": "Ben Junya",
     "url": "https://github.com/MrBenJ"
@@ -78,8 +78,8 @@ __pycache__/
     "name": "Ben Junya",
     "url": "https://github.com/MrBenJ"
   },
-  "homepage": "https://github.com/MrBenJ/claude-code-skill-pack",
-  "repository": "https://github.com/MrBenJ/claude-code-skill-pack",
+  "homepage": "https://github.com/MrBenJ/hbai-skill-pack",
+  "repository": "https://github.com/MrBenJ/hbai-skill-pack",
   "license": "MIT",
   "keywords": ["skills", "code-review", "codex", "context", "compaction"]
 }
@@ -350,7 +350,7 @@ Body mirrors Task 3, adapted to Codex's composition idiom:
 
 - [ ] **Step 1: Write README.md** with these sections, in order:
   1. **Title + intro** — free skill pack for Claude Code from Ben at Human Balance AI; the `hbai` plugin is the HBAI toolkit and this pack is what's in it today; the real product is the lesson: how to chain skills.
-  2. **Install** — both paths: (a) `/plugin marketplace add MrBenJ/claude-code-skill-pack` then `/plugin install hbai@claude-code-skill-pack` (skills become `/hbai:<name>`); (b) manual: copy any folder from `plugins/hbai/skills/` into `~/.claude/skills/` (skills become bare `/<name>`). Note that examples in the README use bare names.
+  2. **Install** — both paths: (a) `/plugin marketplace add MrBenJ/hbai-skill-pack` then `/plugin install hbai@hbai-skill-pack` (skills become `/hbai:<name>`); (b) manual: copy any folder from `plugins/hbai/skills/` into `~/.claude/skills/` (skills become bare `/<name>`). Note that examples in the README use bare names.
   3. **The four skills** — one subsection each: what it does, usage line, and a short stylized example transcript (codex-review showing severity findings + verdict line; codex-review-loop showing a 2-round loop + summary; context-hygiene showing the stats + health rating; smart-compact showing the handoff flow + tombstone).
   4. **The chaining pattern** — the teaching core. Both chains: `/codex-review` → `/codex-review-loop` (a skill invoking a skill in a loop via the Skill tool) and `/context-hygiene` → `/smart-compact` (a skill whose output triggers another). Why the atomic skill stays single-purpose (independently testable, reusable, one contract to stabilize) and why the composite reuses instead of duplicating (one source of truth for the review prompt/verdict; fix logic and review logic evolve independently). Call out the verdict line as the machine-readable interface between the two skills.
   5. **The mirror pack** — the same review chain with roles swapped: Codex drives, Claude reviews read-only. Install: `cp -R codex/skills/* ~/.codex/skills/`, invoked from Codex as `claude-review` / `claude-review-loop`. Teaching point: the verdict contract is tool-agnostic — the identical exact strings coordinate the chain no matter which agent reviews and which fixes; also note the composition-mechanism difference (Claude Code has a Skill tool; Codex composes by skill-name reference).
@@ -378,6 +378,6 @@ Body mirrors Task 3, adapted to Codex's composition idiom:
 
 - [ ] **Step 1: STOP and show Ben the final README** (and repo tree). No remote exists yet. Wait for approval.
 
-- [ ] **Step 2 (post-approval): Create the public repo and push** — `gh repo create MrBenJ/claude-code-skill-pack --public --source . --push --description "Free Claude Code skill pack from Human Balance AI — four skills, two chains, and the lesson of how to compose them."`
+- [ ] **Step 2 (post-approval): Create the public repo and push** — `gh repo create MrBenJ/hbai-skill-pack --public --source . --push --description "Free Claude Code skill pack from Human Balance AI — four skills, two chains, and the lesson of how to compose them."`
 
-- [ ] **Step 3: Smoke-test the published install path** — `/plugin marketplace add MrBenJ/claude-code-skill-pack` from a shell-driven check or report the exact commands for Ben to run.
+- [ ] **Step 3: Smoke-test the published install path** — `/plugin marketplace add MrBenJ/hbai-skill-pack` from a shell-driven check or report the exact commands for Ben to run.

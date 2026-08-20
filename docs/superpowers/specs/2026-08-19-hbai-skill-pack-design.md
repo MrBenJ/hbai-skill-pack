@@ -1,7 +1,7 @@
 # Claude Code Skill Pack — Design
 
 **Date:** 2026-08-19
-**Repo:** `MrBenJ/claude-code-skill-pack` (public, MIT)
+**Repo:** `MrBenJ/hbai-skill-pack` (public, MIT)
 **Status:** Approved by Ben 2026-08-19
 
 ## Purpose
@@ -18,9 +18,9 @@ plugin is the growing HBAI toolkit; this pack is what's in it today. Future
 free skills get added to the same plugin, so one install keeps paying off.
 
 ```
-claude-code-skill-pack/
+hbai-skill-pack/
 ├── .claude-plugin/
-│   └── marketplace.json          # name: claude-code-skill-pack, owner: MrBenJ, one plugin entry
+│   └── marketplace.json          # name: hbai-skill-pack, owner: MrBenJ, one plugin entry
 ├── plugins/
 │   └── hbai/
 │       ├── .claude-plugin/
@@ -45,8 +45,8 @@ claude-code-skill-pack/
 
 **Install paths (both documented in README):**
 
-1. Marketplace: `/plugin marketplace add MrBenJ/claude-code-skill-pack`, then
-   `/plugin install hbai@claude-code-skill-pack`. Skills invoke as
+1. Marketplace: `/plugin marketplace add MrBenJ/hbai-skill-pack`, then
+   `/plugin install hbai@hbai-skill-pack`. Skills invoke as
    `/hbai:codex-review` etc.
 2. Manual, zero-friction: copy any folder from `plugins/hbai/skills/` into
    `~/.claude/skills/`. Skills invoke bare: `/codex-review` etc.

@@ -1,4 +1,4 @@
-# claude-code-skill-pack
+# hbai-skill-pack
 
 **Free agent skills from [Ben Junya](https://github.com/MrBenJ) at Human Balance AI —
 four for Claude Code, two for OpenAI's Codex CLI.**
@@ -12,8 +12,8 @@ paying off.
 **Path 1 — plugin (recommended).** In Claude Code:
 
 ```
-/plugin marketplace add MrBenJ/claude-code-skill-pack
-/plugin install hbai@claude-code-skill-pack
+/plugin marketplace add MrBenJ/hbai-skill-pack
+/plugin install hbai@hbai-skill-pack
 ```
 
 Skills are invoked with the plugin prefix: `/hbai:codex-review`, `/hbai:smart-compact`, etc.
@@ -22,8 +22,8 @@ Skills are invoked with the plugin prefix: `/hbai:codex-review`, `/hbai:smart-co
 directory:
 
 ```bash
-git clone https://github.com/MrBenJ/claude-code-skill-pack
-cp -R claude-code-skill-pack/plugins/hbai/skills/* ~/.claude/skills/
+git clone https://github.com/MrBenJ/hbai-skill-pack
+cp -R hbai-skill-pack/plugins/hbai/skills/* ~/.claude/skills/
 ```
 
 Skills are invoked bare: `/codex-review`, `/smart-compact`, etc. (The examples below
@@ -33,7 +33,7 @@ use the bare names.)
 skills for OpenAI's Codex CLI. Copy them into Codex's skills directory:
 
 ```bash
-cp -R claude-code-skill-pack/codex/skills/* ~/.codex/skills/
+cp -R hbai-skill-pack/codex/skills/* ~/.codex/skills/
 ```
 
 In Codex they're invoked as `/claude-review` and `/claude-review-loop`.

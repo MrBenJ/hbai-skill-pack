@@ -103,7 +103,7 @@ Compute the filename from the session title and date:
 - Take the `title` from the extraction output
 - Lowercase it, replace spaces and special characters with hyphens, strip leading/trailing hyphens
 - Format: `[sanitized-title]-smart-compact-[date].md`
-- Example: `claude-code-skill-pack-smart-compact-2026-08-19.md`
+- Example: `hbai-skill-pack-smart-compact-2026-08-19.md`
 
 Save the approved handoff document to the **current project directory** using
 the Write tool.
