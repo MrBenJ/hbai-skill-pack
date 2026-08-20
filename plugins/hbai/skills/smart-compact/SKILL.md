@@ -49,7 +49,7 @@ important.
 ```markdown
 # [Session Title] — Handoff Summary
 **Date:** YYYY-MM-DD
-**Context at compact:** X% (X,XXX / 200,000 tokens)
+**Context at compact:** X% (X,XXX / [context_window from extraction] tokens)
 
 ## What we were working on
 [1–2 sentences: the main goal or project of this session]
