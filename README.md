@@ -55,9 +55,16 @@ In Codex they're invoked as `/claude-review` and `/claude-review-loop`.
 Runs OpenAI's Codex CLI as an outside reviewer over your uncommitted changes, a branch
 diff, or specific files — in a **read-only sandbox**, so it can never touch your code.
 It reports severity-labeled findings with `file:line` references and ends with a
-machine-readable verdict. It never fixes anything.
+machine-readable verdict. The CLI transcript and footer are discarded; only Codex's
+final reply is relayed, with each finding exactly once. It never fixes anything.
 
-Requires the Codex CLI: `npm i -g @openai/codex`, then `codex login`.
+With no target, a dirty tree reviews the working changes. A clean feature branch with
+commits ahead of the default branch automatically reviews `<default>..HEAD` and says
+so; a clean default branch stops instead of reviewing nothing. An explicit range also
+includes any uncommitted changes on top of `HEAD`.
+
+Requires the Codex CLI: `npm i -g @openai/codex`, then `codex login`. The skill checks
+both the binary and logged-in state before starting.
 
 ```
 > /codex-review
@@ -77,22 +84,24 @@ Also: `/codex-review main..HEAD` (branch diff) or `/codex-review src/auth.ts` (f
 The composite. Each round it **invokes `/codex-review` as a skill** — it contains zero
 review logic of its own. If the verdict is blocking, Claude fixes the findings (Codex
 stays read-only; Claude is the fixer), then re-invokes the review. Stops on a clean
-verdict or the round cap (default 3 — `/codex-review-loop 5` raises it).
+verdict or the round cap. Usage is `/codex-review-loop [max-rounds] [target]`; the cap
+defaults to 3, and the target accepts a range or file paths. The same target is retained
+for every round, with uncommitted fixes included on top of a range.
 
 ```
-> /codex-review-loop
+> /codex-review-loop 2 main..HEAD
 
-⏺ Round 1: invoking /codex-review… 1 finding → fixing stats.js:4
-⏺ Round 2: invoking /codex-review… 1 finding → fixing stats.js:11
-⏺ Round 3: invoking /codex-review… clean ✓
+⏺ Round 1: reviewing main..HEAD… 1 finding → fixing stats.js:3
+⏺ Round 2: reviewing main..HEAD + working tree… clean ✓
 
-  ## Review loop summary (3 rounds)
-  Round 1: 1 finding → fixed: [MAJOR] stats.js:4 off-by-one · deferred: none
-  Round 2: 1 finding → fixed: [MAJOR] stats.js:11 empty-array NaN · deferred: none
-  Outcome: clean verdict on round 3
+  ## Review loop summary (2 rounds)
+  Target: main..HEAD, including uncommitted changes on top of HEAD
+  Round 1: 1 finding → fixed: [MAJOR] stats.js:3 off-by-one · deferred: none
+  Round 2: 0 findings → fixed: none · deferred: none
+  Outcome: clean verdict on round 2
 ```
 
-(That transcript is real — it's the verification run from this repo's build, condensed.)
+(That transcript is real — it's the target-threading verification run, condensed.)
 
 ### `/context-hygiene` — context window health check
 
@@ -141,7 +150,9 @@ The `codex-review` pair with the roles swapped: in these two skills Codex is the
 driver and Claude is the outside reviewer. `/claude-review` runs Claude Code headless
 (`claude -p`) with a **read-only tool allowlist**, so it can never touch your code —
 same review prompt, same severity labels, same verdict strings as `/codex-review`.
-It reports and never fixes.
+It reports each finding once and never fixes. Like its mirror, no argument on a clean
+feature branch widens to `<default>..HEAD`, a clean default branch stops, and an
+explicit range includes dirty work on top of `HEAD`.
 
 Requires Claude Code: `npm i -g @anthropic-ai/claude-code`, then run `claude` once
 to log in.
@@ -162,9 +173,11 @@ to log in.
 
 The counterpart of `/codex-review-loop`. Each round invokes the `claude-review`
 skill — Claude reviews read-only, Codex fixes the blocking findings, repeat — until
-the verdict is clean or the round cap is hit (default 3; pass a number to change it).
-Findings can be deferred instead of fixed, but only with a stated reason, and the
-final summary accounts for every one.
+the verdict is clean or the round cap is hit. Usage is
+`/claude-review-loop [max-rounds] [target]`; the same range or file target is passed
+through every round, including the working-tree fixes layered on a range. Findings
+can be deferred instead of fixed, but only with a stated reason, and the final summary
+names the target and accounts for every finding.
 
 ```
 > /claude-review-loop
@@ -173,6 +186,7 @@ final summary accounts for every one.
 ⏺ Round 2: invoking claude-review… clean ✓
 
   ## Review loop summary (2 rounds)
+  Target: uncommitted changes
   Round 1: 2 findings → fixed: [BLOCKER] stats.js:4 off-by-one ·
            deferred: [MINOR] average([]) NaN — API decision for the caller
   Outcome: clean verdict on round 2
@@ -201,7 +215,12 @@ task-by-task implementation plan.
 - **`$SKILL_DIR` doesn't exist in Claude Code.** Cowork exposes the skill's directory as an env var; Claude Code instead substitutes `${CLAUDE_SKILL_DIR}` inside the SKILL.md itself. Every script invocation was rewritten to use it — which is also what makes both install paths (plugin and manual copy) work unchanged.
 - **The session-file heuristic got sharpened.** "Most recently modified JSONL" was safe inside Cowork's one-session sandbox, but Claude Code users run concurrent sessions. The scripts now scope the search to the current project's folder (Claude Code encodes your working directory into the folder name) before falling back.
 
-Every skill was verified live before shipping: the review skills against a scratch repo with planted bugs (three real Codex rounds to a clean verdict), the ported scripts against a live Claude Code session log.
+Every skill was verified live before shipping. The latest Codex review hardening run
+used Codex CLI 0.147.0 against a scratch repo: final-message-only capture returned one
+copy of a blocking finding and verdict, a clean feature branch widened to
+`main..HEAD`, a clean `main` stopped, a two-round `main..HEAD` loop retained the range
+plus its working-tree fix, and an empty `CODEX_HOME` stopped at login preflight. The
+ported scripts were verified against a live Claude Code session log.
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "hbai",
   "displayName": "HBAI Toolkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Human Balance AI's free skill pack — Codex-powered code review (one-shot + fix loop) and context health tools (check + compact).",
   "author": {
     "name": "Ben Junya",
