@@ -34,6 +34,10 @@ claude-code-skill-pack/
 │           └── smart-compact/
 │               ├── SKILL.md
 │               └── scripts/extract_session.py
+├── codex/
+│   └── skills/                   # the mirror pack — Codex-side skills (manual install)
+│       ├── claude-review/SKILL.md
+│       └── claude-review-loop/SKILL.md
 ├── README.md
 ├── LICENSE                       # MIT, copyright Ben Junya
 └── docs/superpowers/             # specs + plans, committed — part of "show the work"
@@ -128,6 +132,40 @@ phase fully adapted from Cowork to Claude Code:
   Claude Code uses `summary` entries. `extract_session.py` handles both and
   falls back to a title derived from the project directory name.
 
+## Skills 5 & 6: the mirror pack (Codex-side)
+
+Added by Ben mid-design: the same review chain flipped — **Codex drives,
+Claude reviews.** Codex CLI (≥0.147.0) supports the same Agent Skills format
+(`~/.codex/skills/<name>/SKILL.md`), so the pack ships two Codex skills:
+
+- **`claude-review`** — the atomic unit, mirrored. Preflight `command -v
+  claude` (install: `npm i -g @anthropic-ai/claude-code`, then `claude login`
+  guidance). Same target resolution. Invokes headless Claude as reviewer:
+  `claude -p "<review prompt>"` with an explicit read-only tool allowlist
+  (`Read`, `Grep`, `Glob`, read-only `git` commands) — the mirror of Codex's
+  `--sandbox read-only`. Same review-prompt contract, same severity labels,
+  same exact `VERDICT:` lines. Reports, never fixes.
+- **`claude-review-loop`** — composes claude-review. Codex has no Skill tool;
+  the idiomatic Codex composition mechanism is a skill that instructs Codex to
+  invoke the other skill by name and forbids re-implementing it inline. Same
+  loop shape: Claude reviews read-only, Codex fixes, re-review, stop on clean
+  verdict or cap (default 3, argument-overridable). Same summary format.
+
+**Repo placement:** `codex/skills/claude-review/` and
+`codex/skills/claude-review-loop/` — outside `plugins/` because Claude Code
+marketplaces don't serve Codex. Install is manual:
+`cp -R codex/skills/* ~/.codex/skills/`.
+
+**Teaching value:** the verdict line is a tool-agnostic interface — the same
+contract works no matter which agent is the reviewer and which is the fixer.
+
+**Verification note:** claude-review is verified live against the buggy
+fixture. The loop's end-to-end run requires Codex to shell out to `claude`
+(network) while fixing files, which Codex's `workspace-write` sandbox blocks;
+verify with a full-access `codex exec` run confined to the throwaway fixture
+repo, or fall back to verifying the loop's rounds step-by-step manually and
+documenting that.
+
 ## README
 
 Audience: Ben's users/students receiving this as a freebie. Sections:
@@ -141,7 +179,9 @@ Audience: Ben's users/students receiving this as a freebie. Sections:
    `/codex-review` → `/codex-review-loop` (a skill that calls a skill in a
    loop) and `/context-hygiene` → `/smart-compact` (a skill whose output
    triggers another). Why the atomic skill stays single-purpose and the
-   composite reuses it instead of duplicating logic.
+   composite reuses it instead of duplicating logic. Plus the mirror pack as
+   proof the pattern is tool-agnostic: same chain, roles swapped, same
+   verdict contract.
 5. **How this was built** — design decisions, the Cowork→Claude Code port and
    what had to change (paths, `$SKILL_DIR` → `${CLAUDE_SKILL_DIR}`, delivery
    phase), and the read-only sandbox choice for Codex.
@@ -155,7 +195,10 @@ Audience: Ben's users/students receiving this as a freebie. Sections:
    stops on the clean verdict.
 3. Run both Python scripts on this machine; confirm they find the live session
    JSONL under `~/.claude/projects` and return sane numbers.
-4. Fresh-eyes pass on each SKILL.md per superpowers:writing-skills.
+4. Mirror pack: run the real `claude -p` read-only review against the buggy
+   fixture and confirm findings + verdict; verify the Codex-side loop per the
+   verification note above.
+5. Fresh-eyes pass on each SKILL.md per superpowers:writing-skills.
 
 ## Constraints
 
