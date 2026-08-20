@@ -1,6 +1,7 @@
 # claude-code-skill-pack
 
-**Free Claude Code skills from [Ben Junya](https://github.com/MrBenJ) at Human Balance AI.**
+**Free agent skills from [Ben Junya](https://github.com/MrBenJ) at Human Balance AI —
+four for Claude Code, two for OpenAI's Codex CLI.**
 
 This repo installs as one plugin — **`hbai`**, the Human Balance AI toolkit. This pack
 is what's in it today; new free skills land in the same plugin, so one install keeps
@@ -28,14 +29,16 @@ cp -R claude-code-skill-pack/plugins/hbai/skills/* ~/.claude/skills/
 Skills are invoked bare: `/codex-review`, `/smart-compact`, etc. (The examples below
 use the bare names.)
 
-**Bonus — the Codex mirror.** The `codex/skills/` folder contains two skills for
-OpenAI's Codex CLI (same review pair, roles swapped — see [The mirror pack](#the-mirror-pack)):
+**Path 3 — the Codex CLI skills.** `claude-review` and `claude-review-loop` are
+skills for OpenAI's Codex CLI. Copy them into Codex's skills directory:
 
 ```bash
 cp -R claude-code-skill-pack/codex/skills/* ~/.codex/skills/
 ```
 
-## The four skills
+In Codex they're invoked as `/claude-review` and `/claude-review-loop`.
+
+## The skills
 
 ### `/codex-review` — one-shot outside code review
 
@@ -122,21 +125,51 @@ tombstone. Nothing gets discarded without your sign-off.
   =======================================
 ```
 
-## The mirror pack
+### `/claude-review` — one-shot outside code review (Codex CLI)
 
-`codex/skills/` ships the same review pair with the roles swapped, as skills for
-OpenAI's Codex CLI:
+The `codex-review` pair with the roles swapped: in these two skills Codex is the
+driver and Claude is the outside reviewer. `/claude-review` runs Claude Code headless
+(`claude -p`) with a **read-only tool allowlist**, so it can never touch your code —
+same review prompt, same severity labels, same verdict strings as `/codex-review`.
+It reports and never fixes.
 
-| | Claude Code pack | Codex mirror |
-|---|---|---|
-| Driver / fixer | Claude | Codex |
-| Reviewer (read-only) | Codex, `--sandbox read-only` | Claude, `claude -p` + read-only `--allowedTools` |
-| Skills | `/codex-review`, `/codex-review-loop` | `claude-review`, `claude-review-loop` |
-| Verdict contract | `VERDICT: …` exact strings | **identical** |
+Requires Claude Code: `npm i -g @anthropic-ai/claude-code`, then run `claude` once
+to log in.
 
-Same review prompt, same verdict strings — only the plumbing differs (Claude Code's
-loop invokes the review skill via the Skill tool; Codex's loop references the
-`claude-review` skill by name).
+```
+> /claude-review
+
+⏺ Running headless Claude with a read-only tool allowlist over your uncommitted changes…
+
+  [BLOCKER] stats.js:4 — Off-by-one loop bound: `i <= arr.length` adds
+  arr[arr.length] (undefined), so every sum() result is NaN.
+  [MINOR] stats.js:11 — average([]) divides by zero and returns NaN with no guard.
+
+  VERDICT: BLOCKING ISSUES FOUND
+```
+
+### `/claude-review-loop` — review, fix, repeat (Codex CLI)
+
+The counterpart of `/codex-review-loop`. Each round invokes the `claude-review`
+skill — Claude reviews read-only, Codex fixes the blocking findings, repeat — until
+the verdict is clean or the round cap is hit (default 3; pass a number to change it).
+Findings can be deferred instead of fixed, but only with a stated reason, and the
+final summary accounts for every one.
+
+```
+> /claude-review-loop
+
+⏺ Round 1: invoking claude-review… 2 findings → fixing stats.js:4, deferring the [MINOR]
+⏺ Round 2: invoking claude-review… clean ✓
+
+  ## Review loop summary (2 rounds)
+  Round 1: 2 findings → fixed: [BLOCKER] stats.js:4 off-by-one ·
+           deferred: [MINOR] average([]) NaN — API decision for the caller
+  Outcome: clean verdict on round 2
+```
+
+(Also a real transcript — Codex drove this loop against the same buggy fixture
+during this repo's build.)
 
 ## How this was built
 
