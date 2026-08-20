@@ -1,0 +1,15 @@
+{
+  "name": "claude-code-skill-pack",
+  "owner": {
+    "name": "Ben Junya",
+    "url": "https://github.com/MrBenJ"
+  },
+  "description": "Free Claude Code skills from Human Balance AI — built to teach skill chaining.",
+  "plugins": [
+    {
+      "name": "hbai",
+      "source": "./plugins/hbai",
+      "description": "The Human Balance AI toolkit: codex-review, codex-review-loop, context-hygiene, smart-compact."
+    }
+  ]
+}
