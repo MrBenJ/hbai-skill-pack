@@ -2,7 +2,7 @@
   "name": "hbai",
   "displayName": "HBAI Toolkit",
   "version": "1.0.0",
-  "description": "Human Balance AI's free skill pack — two skill chains: Codex-powered code review (atomic reviewer + fix loop) and context health (detector + compactor).",
+  "description": "Human Balance AI's free skill pack — Codex-powered code review (one-shot + fix loop) and context health tools (check + compact).",
   "author": {
     "name": "Ben Junya",
     "url": "https://github.com/MrBenJ"

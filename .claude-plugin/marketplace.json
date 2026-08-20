@@ -4,7 +4,7 @@
     "name": "Ben Junya",
     "url": "https://github.com/MrBenJ"
   },
-  "description": "Free Claude Code skills from Human Balance AI — built to teach skill chaining.",
+  "description": "Free Claude Code skills from Human Balance AI.",
   "plugins": [
     {
       "name": "hbai",

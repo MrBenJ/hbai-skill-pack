@@ -6,11 +6,6 @@ This repo installs as one plugin — **`hbai`**, the Human Balance AI toolkit. T
 is what's in it today; new free skills land in the same plugin, so one install keeps
 paying off.
 
-But the skills are only half the gift. The other half is the lesson: **how to chain
-skills together**. Every skill here is either an atomic building block or a composite
-that reuses one — and the whole repo shows its work, from design docs to the port
-notes. Read it like a tutorial, not just a toolbox.
-
 ## Install
 
 **Path 1 — plugin (recommended).** In Claude Code:
@@ -34,7 +29,7 @@ Skills are invoked bare: `/codex-review`, `/smart-compact`, etc. (The examples b
 use the bare names.)
 
 **Bonus — the Codex mirror.** The `codex/skills/` folder contains two skills for
-OpenAI's Codex CLI (same review chain, roles swapped — see [The mirror pack](#the-mirror-pack)):
+OpenAI's Codex CLI (same review pair, roles swapped — see [The mirror pack](#the-mirror-pack)):
 
 ```bash
 cp -R claude-code-skill-pack/codex/skills/* ~/.codex/skills/
@@ -127,57 +122,10 @@ tombstone. Nothing gets discarded without your sign-off.
   =======================================
 ```
 
-## The chaining pattern
-
-This pack contains two skill chains, and they demonstrate two different ways skills
-compose.
-
-### Chain 1: a skill that calls a skill — `/codex-review` → `/codex-review-loop`
-
-`/codex-review-loop` never runs `codex` itself. Every round goes through the Skill
-tool, invoking `/codex-review` like a function call. The two skills communicate
-through a deliberately rigid interface — the verdict contract:
-
-```
-VERDICT: NO BLOCKING ISSUES
-VERDICT: BLOCKING ISSUES FOUND
-```
-
-Exact strings, always the last line of the review. The loop doesn't parse prose or
-guess sentiment; it keys off one machine-readable line. That line is an API.
-
-**Why not just put the codex command inside the loop skill?** The same reason you
-don't copy-paste a function body everywhere you need it:
-
-- **Single source of truth.** The review prompt, the sandbox flag, and the verdict
-  contract live in one file. Tighten the prompt once and both the one-shot review and
-  the loop get the improvement. Inline it and the two copies drift.
-- **Independent testing.** The atomic skill was verified against a deliberately buggy
-  fixture on its own, before the loop existed. A composite built on a proven unit
-  only has to prove the *composition*.
-- **Reuse beyond this pack.** Anything can key off the verdict line — your own CI
-  skill, a pre-commit ritual, a different loop with different fix rules.
-
-### Chain 2: a skill whose output triggers another — `/context-hygiene` → `/smart-compact`
-
-This pair chains differently: no Skill-tool call, no loop. `/context-hygiene` is a
-*detector* — it measures and rates. At ≥40% it ends by offering `/smart-compact`, the
-*actor*. The handoff is conversational: the detector's recommendation becomes the
-user's (or Claude's) next invocation.
-
-Same principle, different mechanism: the detector doesn't know how to compact, and
-the compactor doesn't know how to measure. Each stays single-purpose; the chain lives
-in the recommendation.
-
-### The pattern in one sentence
-
-**Atomic skills do one thing and expose a stable output; composite skills orchestrate
-atomic ones through that output instead of reimplementing them.**
-
 ## The mirror pack
 
-To prove the pattern is tool-agnostic, `codex/skills/` ships the review chain with
-the roles swapped, as skills for OpenAI's Codex CLI:
+`codex/skills/` ships the same review pair with the roles swapped, as skills for
+OpenAI's Codex CLI:
 
 | | Claude Code pack | Codex mirror |
 |---|---|---|
@@ -186,21 +134,15 @@ the roles swapped, as skills for OpenAI's Codex CLI:
 | Skills | `/codex-review`, `/codex-review-loop` | `claude-review`, `claude-review-loop` |
 | Verdict contract | `VERDICT: …` exact strings | **identical** |
 
-Two things worth noticing:
-
-- **The verdict contract didn't change.** The interface between "reviewer" and
-  "fixer" doesn't care which model plays which role — that's what makes it a real
-  interface.
-- **The composition mechanism did.** Claude Code has a Skill tool, so the loop
-  invokes the review skill programmatically. Codex composes by reference: the loop
-  skill names the `claude-review` skill and forbids re-implementing it inline. Same
-  discipline, different plumbing.
+Same review prompt, same verdict strings — only the plumbing differs (Claude Code's
+loop invokes the review skill via the Skill tool; Codex's loop references the
+`claude-review` skill by name).
 
 ## How this was built
 
-This pack practices what it teaches — it was designed, planned, and verified in the
-open. The actual working documents are in [`docs/superpowers/`](docs/superpowers/):
-the design spec and the task-by-task implementation plan.
+This pack was designed, planned, and verified in the open. The actual working
+documents are in [`docs/superpowers/`](docs/superpowers/): the design spec and the
+task-by-task implementation plan.
 
 **Design decisions worth stealing:**
 
@@ -208,8 +150,9 @@ the design spec and the task-by-task implementation plan.
   Claude runs with a read-only `--allowedTools` allowlist. Separating "the thing that
   finds problems" from "the thing that changes code" isn't just safety — it's what
   makes the loop's roles legible.
-- **Exact-string verdicts.** Prose is for humans; contracts are for chains. The one
-  rigid line costs the reviewer nothing and makes every consumer trivial.
+- **Exact-string verdicts.** The one rigid `VERDICT:` line costs the reviewer nothing
+  and lets anything downstream — the loop skills here, your own CI, a pre-commit
+  ritual — key off it without parsing prose.
 - **A round cap as a safety valve.** Review loops can oscillate (fix A, reviewer now
   wants B, fix B, reviewer misses A…). Cap it, and make the cap-reached outcome
   honest: unresolved findings are listed, never silently dropped.
@@ -237,8 +180,8 @@ as Claude Cowork skills):
   saves to your project directory and hands you a resume line for a fresh session.
   The tombstone survived the port untouched — some things are load-bearing *and* fun.
 - **One rename with teeth.** `hygiene` became `context-hygiene`, which meant chasing
-  the cross-reference in `smart-compact`'s description — the exact kind of coupling
-  the chaining pattern warns you about.
+  the cross-reference in `smart-compact`'s description — skills that mention each
+  other by name have to be renamed together.
 
 Every skill was verified live before shipping: the review skills against a scratch
 repo with planted bugs (three real Codex rounds to a clean verdict), the ported
