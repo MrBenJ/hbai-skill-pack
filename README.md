@@ -1,15 +1,24 @@
 # hbai-skill-pack
 
-**Free agent skills from [Ben Junya](https://github.com/MrBenJ) at Human Balance AI —
-four for Claude Code, two for OpenAI's Codex CLI.**
+Hi! I'm Ben. I'm a software engineer specialized in Agentic AI and personal automation.
 
-This repo installs as one plugin — **`hbai`**, the Human Balance AI toolkit. This pack
-is what's in it today; new free skills land in the same plugin, so one install keeps
-paying off.
+This repo contains agent skills I use on a daily basis with both Claude Code (my personal preference) and Codex. 
+
+These skills are free to use. To get the most out of these skills, you'll need both [Claude Code](https://code.claude.com/docs/en/quickstart) and [Codex](https://chatgpt.com/codex/) installed on your CLI. My daily driver is a Macbook Pro M series machine, and I use iTerm2 as my terminal emulator
+
+I run an AI education and consultancy firm called [Human Balance AI](https://humanbalanceai.com). If you're looking for help creating fully autonomous workflows with AI, [book a call with me](https://humanbalanceai.com/consultation) and I can help you navigate the wild world of Agentic AI in simple, easy to understand language. 
+
+
 
 ## Install
 
-**Path 1 — plugin (recommended).** In Claude Code:
+**Agent Install (recommended)** 
+Have your agent install this skill pack for you
+```md
+Install the HBAI skill pack at https://github.com/MrBenJ/hbai-skill-pack for either Claude Code or Codex. Ask me any clarifying questions if anything is unclear. 
+```
+
+**Path 1 — plugin** In Claude Code:
 
 ```
 /plugin marketplace add MrBenJ/hbai-skill-pack
