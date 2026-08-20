@@ -1,6 +1,6 @@
 ---
 name: claude-review-loop
-description: Use when the user invokes /claude-review-loop or asks Codex to have Claude review and fix until clean, to loop Claude reviews, or to keep reviewing until a review passes. Composes the claude-review skill — Claude reviews read-only, Codex fixes, repeat. Optional argument sets the round cap (default 3).
+description: Use when the user invokes /claude-review-loop or asks Codex to have Claude review and fix until clean, to loop Claude reviews, or to keep reviewing until a review passes. Composes the claude-review skill — Claude reviews read-only, Codex fixes, repeat. Accepts an optional round cap (default 3) and review target.
 ---
 
 # /claude-review-loop — Review, Fix, Repeat (for Codex)
@@ -30,16 +30,25 @@ drift.
 
 ## Setup
 
-- **Round cap:** if the argument is a positive integer, that's the cap;
-  no argument → 3. Anything else → stop and show usage:
-  `/claude-review-loop [max-rounds]`.
-- Keep a round log (findings / fixed / deferred) as you go — you need it for
-  the final summary.
+- **Arguments:** use `/claude-review-loop [max-rounds] [target]`. If the first
+  token is a positive integer, it is the cap; otherwise the cap is 3 and the
+  entire argument is the target. All remaining text after a cap is the
+  target. The target accepts the same forms as claude-review: none,
+  `main..HEAD`, or file paths. Examples: `/claude-review-loop`,
+  `/claude-review-loop 5`, `/claude-review-loop main..HEAD`, and
+  `/claude-review-loop 2 main..HEAD`.
+- Keep the target and a round log (target / findings / fixed / deferred) as
+  you go — you need them for the final summary.
 
 ## The loop (round N of cap)
 
-1. **Review:** invoke the claude-review skill (no argument — it reviews the
-   current uncommitted work, which includes your fixes from prior rounds).
+1. **Review:** on round 1, invoke the claude-review skill with the parsed
+   target, or with no argument when no target was supplied. On every later
+   round, invoke it with that **same target**. The claude-review range target
+   includes both the original range and dirty fixes on top of `HEAD`; never
+   narrow a range review to only the fix diff. If round 1 had no supplied
+   target and claude-review widened a clean feature branch to a range, retain
+   that reported range as the target for every later round.
 2. **Read the verdict** — the last `VERDICT:` line in the review output:
    - `VERDICT: NO BLOCKING ISSUES` → stop. Success.
    - `VERDICT: BLOCKING ISSUES FOUND` → continue to step 3.
@@ -60,6 +69,7 @@ Always end with this accounting, whatever the outcome:
 
 ```
 ## Review loop summary (N rounds)
+Target: <target reviewed, including uncommitted changes when present>
 Round 1: X findings → fixed: [list] · deferred: [finding — reason]
 Round 2: ...
 Outcome: clean verdict on round N | round cap reached with M unresolved findings

@@ -1,7 +1,7 @@
 ---
 name: codex-review-loop
-description: Use when the user invokes /codex-review-loop or asks to review and fix until clean, to loop Codex reviews, or to keep reviewing until a review passes. Composes the codex-review skill — Codex reviews read-only, Claude fixes, repeat. Optional argument sets the round cap (default 3), e.g. /codex-review-loop 5.
-argument-hint: "[max-rounds]"
+description: Use when the user invokes /codex-review-loop or asks to review and fix until clean, to loop Codex reviews, or to keep reviewing until a review passes. Composes the codex-review skill — Codex reviews read-only, Claude fixes, repeat. Accepts an optional round cap (default 3) and review target.
+argument-hint: "[max-rounds] [main..HEAD | file paths]"
 ---
 
 # /codex-review-loop — Review, Fix, Repeat
@@ -29,16 +29,25 @@ contract live in exactly one place — codex-review — so they cannot drift.
 
 ## Setup
 
-- **Round cap:** if the argument is a positive integer, that's the cap;
-  no argument → 3. Anything else → stop and show usage:
-  `/codex-review-loop [max-rounds]`.
-- Keep a round log (findings / fixed / deferred) as you go — you need it for
-  the final summary.
+- **Arguments:** use `/codex-review-loop [max-rounds] [target]`. If the first
+  token is a positive integer, it is the cap; otherwise the cap is 3 and the
+  entire argument is the target. All remaining text after a cap is the
+  target. The target accepts the same forms as codex-review: none,
+  `main..HEAD`, or file paths. Examples: `/codex-review-loop`,
+  `/codex-review-loop 5`, `/codex-review-loop main..HEAD`, and
+  `/codex-review-loop 2 main..HEAD`.
+- Keep the target and a round log (target / findings / fixed / deferred) as
+  you go — you need them for the final summary.
 
 ## The loop (round N of cap)
 
-1. **Review:** invoke the codex-review skill (no argument — it reviews the
-   current uncommitted work, which includes your fixes from prior rounds).
+1. **Review:** on round 1, invoke the codex-review skill with the parsed
+   target, or with no argument when no target was supplied. On every later
+   round, invoke it with that **same target**. The codex-review range target
+   includes both the original range and dirty fixes on top of `HEAD`; never
+   narrow a range review to only the fix diff. If round 1 had no supplied
+   target and codex-review widened a clean feature branch to a range, retain
+   that reported range as the target for every later round.
 2. **Read the verdict** — the last `VERDICT:` line in the review output:
    - `VERDICT: NO BLOCKING ISSUES` → stop. Success.
    - `VERDICT: BLOCKING ISSUES FOUND` → continue to step 3.
@@ -59,6 +68,7 @@ Always end with this accounting, whatever the outcome:
 
 ```
 ## Review loop summary (N rounds)
+Target: <target reviewed, including uncommitted changes when present>
 Round 1: X findings → fixed: [list] · deferred: [finding — reason]
 Round 2: ...
 Outcome: clean verdict on round N | round cap reached with M unresolved findings
