@@ -41,7 +41,10 @@ One Codex invocation, from the repository root, passing the prompt on stdin
 few minutes — use a generous timeout (up to 10 minutes).
 
 ```bash
-codex exec --sandbox read-only - <<'EOF'
+REVIEW_OUT="$(mktemp -t codex-review)"
+REVIEW_ERR="$(mktemp -t codex-review-stderr)"
+
+codex exec --sandbox read-only -o "$REVIEW_OUT" - <<'EOF' > /dev/null 2>"$REVIEW_ERR"
 You are performing a one-shot code review. Review target: <TARGET>.
 
 Rules:
@@ -59,9 +62,9 @@ EOF
 Replace `<TARGET>` with the TARGET line from Step 2. `--sandbox read-only` is
 non-negotiable — it is what guarantees the reviewer cannot edit files.
 
-Note: the Codex CLI prints a `tokens used` footer after the reply, so the
-verdict is the **last `VERDICT:` line in the output**, not necessarily the
-last line of stdout.
+Read **only** `$REVIEW_OUT` after the command finishes. It contains exactly
+the final Codex reply once, without the session transcript or CLI footer. Do
+not relay, inspect, or load the discarded stdout.
 
 ## Step 4: Report
 
@@ -69,12 +72,16 @@ Relay to the user:
 
 1. Every finding, faithfully: severity label, `file:line`, description. Do not
    soften, merge, or drop findings.
-2. The verdict line, verbatim, on its own line.
+2. The verdict line — the last `VERDICT:` line in `$REVIEW_OUT` — verbatim,
+   on its own line.
 
 Then stop. This skill NEVER fixes, stages, commits, or edits anything — not
 even a one-character fix that seems obvious. If the user wants findings fixed
 and re-reviewed automatically, point them at `/codex-review-loop`, which
 composes this skill.
 
-If the Codex output is missing the verdict line, say so explicitly and quote
-the raw tail of the output instead of inventing a verdict.
+If `$REVIEW_OUT` is missing or empty after the run, say so explicitly and
+show the tail of `$REVIEW_ERR` so the failure is diagnosable. If the file is
+not empty but has no verdict line, say so explicitly and quote the raw tail
+of `$REVIEW_OUT`. Never invent a verdict. Remove both temporary files after
+reporting.
