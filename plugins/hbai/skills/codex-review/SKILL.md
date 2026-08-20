@@ -15,9 +15,11 @@ done.
 
 ```bash
 command -v codex
+codex login status
 ```
 
-If `codex` is not found, STOP. Tell the user:
+If `codex` is not found, or `codex login status` does not report a logged-in
+state, STOP. Tell the user:
 
 > Codex CLI isn't installed. Install it with `npm i -g @openai/codex`, then
 > authenticate with `codex login`, and re-run `/codex-review`.
@@ -89,10 +91,14 @@ not relay, inspect, or load the discarded stdout.
 
 Relay to the user:
 
-1. Every finding, faithfully: severity label, `file:line`, description. Do not
-   soften, merge, or drop findings.
+1. Every finding exactly once, faithfully, and in the order Codex gave it.
+   Format each one as severity label first, then `file:line`, then the
+   description. Do not soften, reorder, merge, duplicate, or drop findings.
 2. The verdict line — the last `VERDICT:` line in `$REVIEW_OUT` — verbatim,
    on its own line.
+
+If Codex reports it ran the project's tests/build itself, relay that too —
+it's evidence, not noise.
 
 Then stop. This skill NEVER fixes, stages, commits, or edits anything — not
 even a one-character fix that seems obvious. If the user wants findings fixed

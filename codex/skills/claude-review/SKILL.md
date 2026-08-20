@@ -86,9 +86,13 @@ Replace `<TARGET>` with the TARGET line from Step 2. The verdict is the last
 
 Relay to the user:
 
-1. Every finding, faithfully: severity label, `file:line`, description. Do
-   not soften, merge, or drop findings.
+1. Every finding exactly once, faithfully, and in the order Claude gave it.
+   Format each one as severity label first, then `file:line`, then the
+   description. Do not soften, reorder, merge, duplicate, or drop findings.
 2. The verdict line, verbatim, on its own line.
+
+If Claude reports it ran the project's tests/build itself, relay that too —
+it's evidence, not noise.
 
 Then stop. This skill NEVER fixes, stages, commits, or edits anything — not
 even a one-character fix that seems obvious. If the user wants findings fixed
