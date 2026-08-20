@@ -33,9 +33,28 @@ From the argument:
 
 | Argument | Target | TARGET line for the prompt |
 |---|---|---|
-| none | Uncommitted work | `the uncommitted changes in this repository (staged, unstaged, and untracked files); run 'git status' and 'git diff HEAD' to see them, and read untracked files directly` |
-| contains `..` (e.g. `main..HEAD`) | Branch diff | `the diff <range> in this repository; run 'git diff <range>' to see it` |
+| none + dirty tree | Uncommitted work | `the uncommitted changes in this repository (staged, unstaged, and untracked files); run 'git status' and 'git diff HEAD' to see them, and read untracked files directly` |
+| none + clean tree | The current feature branch's commits ahead of the default branch, or stop if there are none | `the diff <default>..HEAD in this repository; run 'git diff <default>..HEAD' to see it, and also review any uncommitted changes on top of HEAD; run 'git status' and 'git diff HEAD', and read untracked files directly` |
+| contains `..` (e.g. `main..HEAD`) | Branch diff plus any dirty work on top of `HEAD` | `the diff <range> in this repository; run 'git diff <range>' to see it, and also review any uncommitted changes on top of HEAD; run 'git status' and 'git diff HEAD', and read untracked files directly` |
 | anything else | Specific files | `these files: <paths>; read each one directly` |
+
+When no argument was given, run `git status --porcelain` before selecting a
+target. If it is non-empty, use the uncommitted-work target. If it is empty:
+
+1. Resolve the default branch with
+   `git symbolic-ref --quiet --short refs/remotes/origin/HEAD`, stripping the
+   leading `origin/`. If that fails, use the existing local `main` branch,
+   then the existing local `master` branch.
+2. Read the current branch with `git branch --show-current`.
+3. If the current branch differs from the default branch, run
+   `git rev-list --count <default>..HEAD`. When the count is greater than
+   zero, review `<default>..HEAD` and tell the user in one line that the tree
+   was clean, so the review widened to that range.
+4. Otherwise STOP. Tell the user there is nothing to review and show these
+   three argument forms: `/claude-review`, `/claude-review main..HEAD`, and
+   `/claude-review <file paths>`.
+
+Do not invoke Claude until this resolution produces a non-empty target.
 
 ## Step 3: Run the review
 
