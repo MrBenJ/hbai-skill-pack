@@ -13,7 +13,8 @@ I run an AI education and consultancy firm called [Human Balance AI](https://hum
 ## Install
 
 **Agent Install (recommended)** 
-Have your agent install this skill pack for you
+Have your agent install this skill pack for you. Copy this prompt into Claude Code or Codex. 
+
 ```md
 Install the HBAI skill pack at https://github.com/MrBenJ/hbai-skill-pack for either Claude Code or Codex. Ask me any clarifying questions if anything is unclear. 
 ```
@@ -188,46 +189,19 @@ task-by-task implementation plan.
 
 **Design decisions worth stealing:**
 
-- **The reviewer can never write.** Codex runs under `--sandbox read-only`; headless
-  Claude runs with a read-only `--allowedTools` allowlist. Separating "the thing that
-  finds problems" from "the thing that changes code" isn't just safety — it's what
-  makes the loop's roles legible.
-- **Exact-string verdicts.** The one rigid `VERDICT:` line costs the reviewer nothing
-  and lets anything downstream — the loop skills here, your own CI, a pre-commit
-  ritual — key off it without parsing prose.
-- **A round cap as a safety valve.** Review loops can oscillate (fix A, reviewer now
-  wants B, fix B, reviewer misses A…). Cap it, and make the cap-reached outcome
-  honest: unresolved findings are listed, never silently dropped.
-- **Deferrals over silent skips.** The loop may decline to fix a finding (false
-  positive, out of scope) but must say so with a reason. The final summary accounts
-  for every finding of every round.
+- **The reviewer can never write.** Codex runs under `--sandbox read-only`; headless Claude runs with a read-only `--allowedTools` allowlist.
+- **Exact-string verdicts.** The one rigid `VERDICT:` line costs the reviewer nothing and lets anything downstream — the loop skills here, your own CI, a pre-commit ritual — key off it without parsing prose.
+- **A round cap as a safety valve.** Review loops can oscillate (fix A, reviewer now wants B, fix B, reviewer misses A…). Cap it, and make the cap-reached outcome honest: unresolved findings are listed, never silently dropped.
+- **Deferrals over silent skips.** The loop may decline to fix a finding (false positive, out of scope) but must say so with a reason. The final summary accounts for every finding of every round.
 
-**The Cowork → Claude Code port** (`context-hygiene` and `smart-compact` started life
-as Claude Cowork skills):
+**The Cowork → Claude Code port** (`context-hygiene` and `smart-compact` started life as Claude Cowork skills):
 
 - **Session paths differ.** Cowork's sandbox mounts session logs at
-  `~/mnt/.claude/projects`; Claude Code keeps them at `~/.claude/projects`. Both
-  scripts now check the Claude Code path first and fall back to the Cowork mount, so
-  the skills work in both environments.
-- **`$SKILL_DIR` doesn't exist in Claude Code.** Cowork exposes the skill's directory
-  as an env var; Claude Code instead substitutes `${CLAUDE_SKILL_DIR}` inside the
-  SKILL.md itself. Every script invocation was rewritten to use it — which is also
-  what makes both install paths (plugin and manual copy) work unchanged.
-- **The session-file heuristic got sharpened.** "Most recently modified JSONL" was
-  safe inside Cowork's one-session sandbox, but Claude Code users run concurrent
-  sessions. The scripts now scope the search to the current project's folder (Claude
-  Code encodes your working directory into the folder name) before falling back.
-- **Delivery had to change worlds.** Cowork's `smart-compact` saved to Downloads,
-  linked with `computer://`, and suggested a sidebar rename. The Claude Code version
-  saves to your project directory and hands you a resume line for a fresh session.
-  The tombstone survived the port untouched — some things are load-bearing *and* fun.
-- **One rename with teeth.** `hygiene` became `context-hygiene`, which meant chasing
-  the cross-reference in `smart-compact`'s description — skills that mention each
-  other by name have to be renamed together.
+  `~/mnt/.claude/projects`; Claude Code keeps them at `~/.claude/projects`. Both scripts now check the Claude Code path first and fall back to the Cowork mount, so the skills work in both environments.
+- **`$SKILL_DIR` doesn't exist in Claude Code.** Cowork exposes the skill's directory as an env var; Claude Code instead substitutes `${CLAUDE_SKILL_DIR}` inside the SKILL.md itself. Every script invocation was rewritten to use it — which is also what makes both install paths (plugin and manual copy) work unchanged.
+- **The session-file heuristic got sharpened.** "Most recently modified JSONL" was safe inside Cowork's one-session sandbox, but Claude Code users run concurrent sessions. The scripts now scope the search to the current project's folder (Claude Code encodes your working directory into the folder name) before falling back.
 
-Every skill was verified live before shipping: the review skills against a scratch
-repo with planted bugs (three real Codex rounds to a clean verdict), the ported
-scripts against a live Claude Code session log.
+Every skill was verified live before shipping: the review skills against a scratch repo with planted bugs (three real Codex rounds to a clean verdict), the ported scripts against a live Claude Code session log.
 
 ## License
 
@@ -235,5 +209,4 @@ scripts against a live Claude Code session log.
 
 ---
 
-*From Ben at **Human Balance AI** — practical AI skills for people who'd rather
-understand their tools than worship them. This pack is free; share it.*
+*From Ben at [**Human Balance AI**](https://humanbalanceai.com?origin=hbai-skill-pack) — practical AI skills for people who'd rather understand their tools than worship them. This pack is free; share it.
