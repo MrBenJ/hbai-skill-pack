@@ -1,6 +1,6 @@
 ---
 name: claude-review
-description: Use when the user invokes /claude-review or asks Codex for a Claude review, a second-opinion code review, or an outside review of uncommitted changes, a branch diff (e.g. main..HEAD), or specific files. Runs Claude Code headless with a read-only tool allowlist as the reviewer. Reports findings only — never fixes anything.
+description: Use when the user invokes /claude-review or asks Codex for a Claude review, a second-opinion code review, or an outside review of uncommitted changes, a branch diff (e.g. main..HEAD), or specific files. Runs Claude Code headless outside the Codex sandbox, with a read-only tool allowlist as the reviewer. Reports findings only — never fixes anything.
 ---
 
 # /claude-review — One-Shot Claude Code Review (for Codex)
@@ -62,6 +62,21 @@ One headless Claude invocation, from the repository root, passing the prompt
 on stdin (the `-` argument). The `--allowedTools` allowlist is the read-only
 guarantee — headless mode denies every tool not on it, so Claude cannot edit
 files. It is non-negotiable. Reviews can take a few minutes — allow up to 10.
+
+**Run this invocation outside the Codex sandbox on the first attempt.** Use the
+host's escalated or outside-sandbox execution option (for example,
+`sandbox_permissions: require_escalated` when available) and request approval if
+the host requires it. A sandboxed Codex process may hide Claude's existing login
+and network access, producing a false `Not logged in` result even when Claude is
+authenticated on the host. Do not use a failed sandboxed invocation as an
+authentication check and do not make the user log in again before retrying outside
+the sandbox.
+
+Outside-sandbox execution only lets the Claude CLI reach its existing credentials
+and service. It does not make the review writable: the `--allowedTools` allowlist
+below remains the required write barrier. If outside-sandbox execution is denied,
+stop and explain that the review cannot run; do not fall back to a sandboxed review
+or a different reviewer.
 
 ```bash
 claude -p --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git status:*) Bash(git log:*)" - <<'EOF'

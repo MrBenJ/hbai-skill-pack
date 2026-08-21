@@ -26,7 +26,7 @@ Install the HBAI skill pack at https://github.com/MrBenJ/hbai-skill-pack for eit
 /plugin install hbai@hbai-skill-pack
 ```
 
-Skills are invoked with the plugin prefix: `/hbai:codex-review`, `/hbai:smart-compact`, etc.
+Skills are invoked with the plugin prefix: `/hbai:codex-review`, `/hbai:handoff`, etc.
 
 **Path 2 — manual, zero friction.** Copy any skill folder into your personal skills
 directory:
@@ -39,14 +39,16 @@ cp -R hbai-skill-pack/plugins/hbai/skills/* ~/.claude/skills/
 Skills are invoked bare: `/codex-review`, `/smart-compact`, etc. (The examples below
 use the bare names.)
 
-**Path 3 — the Codex CLI skills.** `claude-review` and `claude-review-loop` are
-skills for OpenAI's Codex CLI. Copy them into Codex's skills directory:
+**Path 3 — the Codex CLI skills.** The portable `handoff` skill and the
+`claude-review` / `claude-review-loop` pair work with OpenAI's Codex CLI. Copy them
+into Codex's skills directory:
 
 ```bash
 cp -R hbai-skill-pack/codex/skills/* ~/.codex/skills/
 ```
 
-In Codex they're invoked as `/claude-review` and `/claude-review-loop`.
+In Codex they're invoked as `/handoff`, `/claude-review`, and
+`/claude-review-loop`.
 
 ## The skills
 
@@ -144,6 +146,34 @@ tombstone. Nothing gets discarded without your sign-off.
   =======================================
 ```
 
+### `/handoff` — continue with another coding agent
+
+Creates one paste-ready prompt so another coding agent can continue the current
+work without access to this conversation. It reconciles the goal and decisions
+from the chat with the live repository state, includes the work already completed,
+verification, constraints, and concrete next steps, and stays vendor-neutral so
+you can paste it into whichever coding subscription you want to use next.
+
+The skill is read-only: it does not continue the implementation or write a handoff
+file. Its single-block output contract also makes it useful as a small composition
+primitive inside larger skills. Pass an optional focus when you want to steer the
+next agent: `/handoff finish the failing integration test`. A composing skill can
+invoke `handoff` after a manual install or `hbai:handoff` from the plugin, provide
+its known context and desired format, then relay the content of the returned block.
+
+Use `/smart-compact` to compress the current session into a reviewed handoff file;
+use `/handoff` when you only need a prompt to paste into a different coding agent.
+
+````text
+> /handoff focus next on the failing integration test
+
+⏺ ```text
+  Continue the work in `/path/to/project` on the current feature branch.
+  Preserve the existing working-tree changes. The implementation is complete;
+  the remaining task is to diagnose and fix the failing integration test in…
+  ```
+````
+
 ### `/claude-review` — one-shot outside code review (Codex CLI)
 
 The `codex-review` pair with the roles swapped: in these two skills Codex is the
@@ -153,6 +183,10 @@ same review prompt, same severity labels, same verdict strings as `/codex-review
 It reports each finding once and never fixes. Like its mirror, no argument on a clean
 feature branch widens to `<default>..HEAD`, a clean default branch stops, and an
 explicit range includes dirty work on top of `HEAD`.
+
+Codex launches Claude outside its own sandbox so Claude can use the host's existing
+login and network access. Claude still remains read-only because the explicit tool
+allowlist denies editing tools.
 
 Requires Claude Code: `npm i -g @anthropic-ai/claude-code`, then run `claude` once
 to log in.
@@ -207,6 +241,7 @@ task-by-task implementation plan.
 - **Exact-string verdicts.** The one rigid `VERDICT:` line costs the reviewer nothing and lets anything downstream — the loop skills here, your own CI, a pre-commit ritual — key off it without parsing prose.
 - **A round cap as a safety valve.** Review loops can oscillate (fix A, reviewer now wants B, fix B, reviewer misses A…). Cap it, and make the cap-reached outcome honest: unresolved findings are listed, never silently dropped.
 - **Deferrals over silent skips.** The loop may decline to fix a finding (false positive, out of scope) but must say so with a reason. The final summary accounts for every finding of every round.
+- **Handoffs as an atomic primitive.** `/handoff` has one job and a stable output shape: turn verified session and workspace state into a portable continuation prompt. Other skills can invoke it and relay the result without inheriting prompt-generation logic of their own.
 
 **The Cowork → Claude Code port** (`context-hygiene` and `smart-compact` started life as Claude Cowork skills):
 
