@@ -9,7 +9,7 @@
     {
       "name": "hbai",
       "source": "./plugins/hbai",
-      "description": "The Human Balance AI toolkit: codex-review, codex-review-loop, context-hygiene, smart-compact."
+      "description": "The Human Balance AI toolkit: code review, context health, compaction, and agent handoffs."
     }
   ]
 }
