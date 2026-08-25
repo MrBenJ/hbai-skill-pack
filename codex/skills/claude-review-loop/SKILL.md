@@ -5,10 +5,10 @@ description: Use when the user invokes /claude-review-loop or asks Codex to have
 
 # /claude-review-loop — Review, Fix, Repeat (for Codex)
 
-Drive the claude-review skill in a loop: Claude reviews (read-only tool
-allowlist), Codex fixes the blocking findings, Claude re-reviews — until the
-verdict is clean or the round cap is hit. The roles never blur: **Claude only
-reviews, Codex only fixes.**
+Drive the claude-review skill in a loop: Claude Opus reviews (read-only tool
+allowlist), Codex fixes the blocking findings, Claude Opus re-reviews — until
+the verdict is clean or the round cap is hit. The roles never blur: **Claude
+only reviews, Codex only fixes.**
 
 This is the mirror of the Claude Code–side `codex-review-loop` skill: same
 loop, roles swapped.
@@ -17,14 +17,14 @@ loop, roles swapped.
 
 Every review round MUST be performed by the **claude-review skill** — invoke
 it by name and follow it exactly. Do not re-implement its checks inline:
-NEVER run `claude -p` directly from this skill. This skill contains zero
-review logic on purpose: the review prompt, the read-only allowlist, and the
-verdict contract live in exactly one place — claude-review — so they cannot
-drift.
+NEVER run `claude --model opus -p` directly from this skill. This skill contains
+zero review logic on purpose: the explicit Opus selection, review prompt,
+read-only allowlist, and verdict contract live in exactly one place —
+claude-review — so they cannot drift.
 
 | Excuse | Reality |
 |--------|---------|
-| "Invoking the other skill has overhead; I'll just run claude -p" | The overhead is the point of the lesson. Inlining forks the review contract. |
+| "Invoking the other skill has overhead; I'll just run claude directly" | The overhead is the point of the lesson. Inlining forks the model selection and review contract. |
 | "I need a slightly different prompt this round" | You don't. The contract is fixed; pass a different target argument if needed. |
 | "The claude-review skill isn't installed" | Then STOP and tell the user to copy it into ~/.codex/skills/ — don't imitate it. |
 

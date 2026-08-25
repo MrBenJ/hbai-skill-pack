@@ -178,11 +178,12 @@ use `/handoff` when you only need a prompt to paste into a different coding agen
 
 The `codex-review` pair with the roles swapped: in these two skills Codex is the
 driver and Claude is the outside reviewer. `/claude-review` runs Claude Code headless
-(`claude -p`) with a **read-only tool allowlist**, so it can never touch your code —
-same review prompt, same severity labels, same verdict strings as `/codex-review`.
-It reports each finding once and never fixes. Like its mirror, no argument on a clean
-feature branch widens to `<default>..HEAD`, a clean default branch stops, and an
-explicit range includes dirty work on top of `HEAD`.
+with the Opus model explicitly selected (`claude --model opus -p`) and a **read-only
+tool allowlist**, so it can never touch your code — same review prompt, same severity
+labels, same verdict strings as `/codex-review`. It reports each finding once and
+never fixes. Like its mirror, no argument on a clean feature branch widens to
+`<default>..HEAD`, a clean default branch stops, and an explicit range includes dirty
+work on top of `HEAD`.
 
 Codex launches Claude outside its own sandbox so Claude can use the host's existing
 login and network access. Claude still remains read-only because the explicit tool

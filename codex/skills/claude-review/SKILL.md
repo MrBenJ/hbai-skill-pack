@@ -5,10 +5,10 @@ description: Use when the user invokes /claude-review or asks Codex for a Claude
 
 # /claude-review — One-Shot Claude Code Review (for Codex)
 
-Run exactly ONE code review using Claude Code's headless mode as an outside
-reviewer, then report its findings. Claude runs with a read-only tool
-allowlist, so it can never touch the code. This skill reviews and reports —
-it does not fix. One shot, done.
+Run exactly ONE code review using Claude Code's headless mode with the Opus
+model as an outside reviewer, then report its findings. Claude runs with a
+read-only tool allowlist, so it can never touch the code. This skill reviews
+and reports — it does not fix. One shot, done.
 
 This is the mirror of the Claude Code–side `codex-review` skill: same review
 contract, roles swapped.
@@ -58,10 +58,12 @@ Do not invoke Claude until this resolution produces a non-empty target.
 
 ## Step 3: Run the review
 
-One headless Claude invocation, from the repository root, passing the prompt
-on stdin (the `-` argument). The `--allowedTools` allowlist is the read-only
-guarantee — headless mode denies every tool not on it, so Claude cannot edit
-files. It is non-negotiable. Reviews can take a few minutes — allow up to 10.
+One headless Claude invocation using the explicit `opus` model alias, from the
+repository root, passing the prompt on stdin (the `-` argument). The model flag
+is required even when Opus is the user's current default. The `--allowedTools`
+allowlist is the read-only guarantee — headless mode denies every tool not on
+it, so Claude cannot edit files. Both flags are non-negotiable. Reviews can take
+a few minutes — allow up to 10.
 
 **Run this invocation outside the Codex sandbox on the first attempt.** Use the
 host's escalated or outside-sandbox execution option (for example,
@@ -79,7 +81,7 @@ stop and explain that the review cannot run; do not fall back to a sandboxed rev
 or a different reviewer.
 
 ```bash
-claude -p --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git status:*) Bash(git log:*)" - <<'EOF'
+claude --model opus -p --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git status:*) Bash(git log:*)" - <<'EOF'
 You are performing a one-shot code review. Review target: <TARGET>.
 
 Rules:
